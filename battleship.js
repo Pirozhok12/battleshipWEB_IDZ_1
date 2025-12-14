@@ -13,19 +13,22 @@
         let playerTurn = true;
         let shipsPlaced = false;
         
-        // ШІ бота
-        let botTargets = []; // Черга цілей для добивання
-        let botLastHit = null; // Останнє влучання
+        let botFirstHit = null;
+        let botTargets = []; 
+        let botLastHit = null; 
         let botDirection = null; // Напрямок добивання (0-вниз, 1-вправо, 2-вгору, 3-вліво)
 
-        // Ініціалізація
+ 
         function init() {
-            playerField = Array(SIZE).fill(null).map(() => Array(SIZE).fill(GameCell.EMPTY));
-            enemyField = Array(SIZE).fill(null).map(() => Array(SIZE).fill(GameCell.EMPTY));
+            playerField = Array(SIZE).fill(null)
+            .map(() => Array(SIZE).fill(GameCell.EMPTY));
+            
+            enemyField = Array(SIZE).fill(null)
+            .map(() => Array(SIZE).fill(GameCell.EMPTY));
             renderBoards();
         }
 
-        // Відображення полів
+
         function renderBoards() {
             renderBoard('playerBoard', playerField, true);
             renderBoard('enemyBoard', enemyField, false);
@@ -47,7 +50,7 @@
                     
                     if (cellValue === GameCell.SHIP && showShips) {
                         cell.classList.add('ship');
-                        cell.textContent = '■';
+                        cell.textContent = 'S';
                     } else if (cellValue === GameCell.HIT) {
                         cell.classList.add('hit');
                         cell.textContent = 'X';
@@ -72,7 +75,7 @@
             }
         }
 
-        // Перевірка умов розміщення
+
         function canPlaceShip(field, length, x, y, horizontal) {
             if (horizontal) {
                 if (y + length > SIZE) return false;
@@ -103,7 +106,7 @@
             return true;
         }
 
-        // Розміщення корабля
+
         function placeShip(field, length, x, y, horizontal) {
             if (horizontal) {
                 for (let i = 0; i < length; i++) {
@@ -116,7 +119,7 @@
             }
         }
 
-        // Автоматична розстановка
+ 
         function autoPlaceShips() {
             playerField = Array(SIZE).fill(null).map(() => Array(SIZE).fill(GameCell.EMPTY));
             const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
@@ -138,7 +141,7 @@
                 }
             }
             
-            // Розставляємо кораблі ворога
+
             enemyField = Array(SIZE).fill(null).map(() => Array(SIZE).fill(GameCell.EMPTY));
             for (const shipLength of ships) {
                 let placed = false;
@@ -163,7 +166,7 @@
             showMessage('Кораблі розставлені! Можна почати гру', 'success');
         }
 
-        // Початок гри
+
         function startGame() {
             if (!shipsPlaced) {
                 showMessage('Спочатку розставте кораблі!', 'error');
@@ -180,7 +183,7 @@
             showMessage('Гра почалась! Ваш хід - клікайте по полю ворога', 'success');
         }
 
-        // Постріл гравця
+
         function handlePlayerShot(x, y) {
             if (!gameStarted || !playerTurn) return;
             
@@ -194,22 +197,22 @@
             if (cell === GameCell.SHIP) {
                 enemyField[x][y] = GameCell.HIT;
                 
-                // Перевіряємо чи весь корабель потоплений
+
                 if (isShipSunk(enemyField, x, y)) {
                     markShipAsSunk(enemyField, x, y);
                     markMissesAroundSunk(enemyField, x, y);
-                    showMessage('Корабель потоплено! 🎯', 'success');
+                    showMessage('Корабель потоплено!', 'success');
                 } else {
-                    showMessage('Влучив! 🔥 Стріляйте ще раз', 'success');
+                    showMessage('Влучив! Стріляйте ще раз', 'success');
                 }
                 
                 if (checkWinner(enemyField)) {
-                    endGame('Ви перемогли! 🎉');
+                    endGame('Ви перемогли!');
                     return;
                 }
             } else {
                 enemyField[x][y] = GameCell.MISS;
-                showMessage('Промах! 💧', '');
+                showMessage('Промах!', '');
                 playerTurn = false;
                 
                 setTimeout(() => {
@@ -221,7 +224,7 @@
             updateTurnInfo();
         }
 
-        // Перевірка чи весь корабель потоплений
+
         function isShipSunk(field, x, y) {
             const visited = Array(SIZE).fill(null).map(() => Array(SIZE).fill(false));
             return checkShipRecursive(field, x, y, visited);
@@ -235,10 +238,8 @@
             
             const cell = field[x][y];
             if (cell === GameCell.EMPTY || cell === GameCell.MISS) return true;
-            if (cell === GameCell.SHIP) return false; // Є ще жива частина
+            if (cell === GameCell.SHIP) return false;
             if (cell === GameCell.SUNK) return true;
-            
-            // Перевіряємо сусідів (тільки горизонталь і вертикаль)
             if (cell === GameCell.HIT) {
                 return checkShipRecursive(field, x - 1, y, visited) &&
                        checkShipRecursive(field, x + 1, y, visited) &&
@@ -249,7 +250,6 @@
             return true;
         }
 
-        // Позначити корабель як потоплений
         function markShipAsSunk(field, x, y) {
             const visited = Array(SIZE).fill(null).map(() => Array(SIZE).fill(false));
             markSunkRecursive(field, x, y, visited);
@@ -269,7 +269,6 @@
             markSunkRecursive(field, x, y + 1, visited);
         }
 
-        // Позначити промахи навколо потопленого корабля
         function markMissesAroundSunk(field, x, y) {
             const visited = Array(SIZE).fill(null).map(() => Array(SIZE).fill(false));
             const sunkCells = [];
@@ -304,27 +303,20 @@
             collectSunkCells(field, x, y + 1, visited, cells);
         }
 
-        // Хід ворога (розумний ШІ)
-        function enemyMove() {
+
+function enemyMove() {
             let x, y;
             
-            // Якщо є цілі для добивання
-            if (botTargets.length > 0) {
-                const target = botTargets.shift();
-                x = target.x;
-                y = target.y;
-            } 
-            // Якщо було влучання і є напрямок
-            else if (botLastHit && botDirection !== null) {
+            if (botLastHit && botDirection !== null) {
                 const next = getNextInDirection(botLastHit.x, botLastHit.y, botDirection);
                 
                 if (next && isValidTarget(next.x, next.y)) {
                     x = next.x;
                     y = next.y;
                 } else {
-                    // Міняємо напрямок на протилежний
+                    // Міняємо напрямок на протилежний від першого влучання
                     botDirection = (botDirection + 2) % 4;
-                    const opposite = getNextInDirection(botLastHit.x, botLastHit.y, botDirection);
+                    const opposite = getNextInDirection(botFirstHit.x, botFirstHit.y, botDirection);
                     
                     if (opposite && isValidTarget(opposite.x, opposite.y)) {
                         x = opposite.x;
@@ -332,24 +324,19 @@
                     } else {
                         // Скидаємо стан
                         botLastHit = null;
+                        botFirstHit = null;
                         botDirection = null;
+                        botTargets = [];
                         x = getRandomTarget().x;
                         y = getRandomTarget().y;
                     }
                 }
             }
-            // Перше влучання - шукаємо навколо
-            else if (botLastHit) {
-                const neighbors = getNeighbors(botLastHit.x, botLastHit.y);
-                if (neighbors.length > 0) {
-                    const target = neighbors[0];
-                    x = target.x;
-                    y = target.y;
-                } else {
-                    botLastHit = null;
-                    x = getRandomTarget().x;
-                    y = getRandomTarget().y;
-                }
+            // Якщо є цілі для добивання (після першого влучання)
+            else if (botTargets.length > 0) {
+                const target = botTargets.shift();
+                x = target.x;
+                y = target.y;
             }
             // Випадковий постріл
             else {
@@ -366,32 +353,35 @@
                 // Визначаємо напрямок після другого влучання
                 if (botLastHit && botDirection === null) {
                     botDirection = getDirection(botLastHit.x, botLastHit.y, x, y);
+                    botTargets = []; // Очищаємо сусідів, тепер стріляємо по лінії
                 }
                 
                 if (isShipSunk(playerField, x, y)) {
                     markShipAsSunk(playerField, x, y);
                     markMissesAroundSunk(playerField, x, y);
-                    showMessage('Ворог потопив ваш корабель! 💥', 'error');
+                    showMessage('Ворог потопив ваш корабель!', 'error');
                     // Скидаємо стан після потоплення
                     botLastHit = null;
+                    botFirstHit = null;
                     botDirection = null;
                     botTargets = [];
                 } else {
-                    showMessage('Ворог влучив! 🔥', 'error');
+                    showMessage('Ворог влучив!', 'error');
                     
-                    // Якщо перше влучання - додаємо сусідів
+                    // Якщо перше влучання - запам'ятовуємо і додаємо сусідів
                     if (!botLastHit) {
                         botLastHit = { x, y };
+                        botFirstHit = { x, y };
                         const neighbors = getNeighbors(x, y);
                         botTargets.push(...neighbors);
                     } else {
-                        // Продовжуємо в тому ж напрямку
+                        // Друге+ влучання - оновлюємо останню позицію
                         botLastHit = { x, y };
                     }
                 }
                 
                 if (checkWinner(playerField)) {
-                    endGame('Ворог переміг! 😢');
+                    endGame('Ворог переміг!');
                     return;
                 }
                 
@@ -400,7 +390,7 @@
                 }, 1000);
             } else {
                 playerField[x][y] = GameCell.MISS;
-                showMessage('Ворог промахнувся! Ваш хід 🎯', 'success');
+                showMessage('Ворог промахнувся! Ваш хід', 'success');
                 playerTurn = true;
             }
             
@@ -408,7 +398,7 @@
             updateTurnInfo();
         }
         
-        // Допоміжні функції для ШІ
+
         function isValidTarget(x, y) {
             if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return false;
             const cell = playerField[x][y];
@@ -423,7 +413,7 @@
                 x = Math.floor(Math.random() * SIZE);
                 y = Math.floor(Math.random() * SIZE);
                 attempts++;
-            } while (!isValidTarget(x, y) && attempts < 1000);
+            } while (!isValidTarget(x, y) /*&& attempts < 1000*/);
             
             return { x, y };
         }
@@ -458,14 +448,21 @@
         }
         
         function getDirection(x1, y1, x2, y2) {
-            if (x2 > x1) return 0; // вниз
-            if (y2 > y1) return 1; // вправо
-            if (x2 < x1) return 2; // вгору
-            if (y2 < y1) return 3; // вліво
+            if (x2 > x1){ 
+                console.log("вниз"); 
+                return 0;} 
+            if (y2 > y1){ 
+                console.log("вправо");
+                return 1;} 
+            if (x2 < x1){ 
+                console.log("вгору");
+                return 2;} 
+            if (y2 < y1){ 
+                console.log("вліво");
+                return 3;} 
             return null;
         }
 
-        // Перевірка переможця
         function checkWinner(field) {
             for (let i = 0; i < SIZE; i++) {
                 for (let j = 0; j < SIZE; j++) {
@@ -475,31 +472,28 @@
             return true;
         }
 
-        // Кінець гри
         function endGame(msg) {
             gameStarted = false;
             showMessage(msg, 'success');
-            renderBoards();
+            renderBoard('playerBoard', playerField, true);
+            renderBoard('enemyBoard', enemyField, true);
         }
 
-        // Оновлення інформації про хід
         function updateTurnInfo() {
             const info = document.getElementById('turnInfo');
             if (gameStarted) {
-                info.textContent = playerTurn ? '🎮 Ваш хід' : '🤖 Хід ворога...';
+                info.textContent = playerTurn ? 'Ваш хід' : 'Хід ворога...';
             } else {
                 info.textContent = '';
             }
         }
 
-        // Показати повідомлення
         function showMessage(msg, type) {
             const msgEl = document.getElementById('message');
             msgEl.textContent = msg;
             msgEl.className = 'message ' + type;
         }
 
-        // Скидання гри
         function resetGame() {
             gameStarted = false;
             playerTurn = true;
@@ -514,6 +508,5 @@
             updateTurnInfo();
         }
 
-        // Ініціалізація при завантаженні
-        init();
+        init ();
         showMessage('Натисніть "Авто-розстановка" для початку', '');
